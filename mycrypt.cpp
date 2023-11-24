@@ -100,7 +100,7 @@ int main(int argc, char* argv[]) {
     EncryptDecrypt(inputFile, encryptedFile, ENCRYPT);
     std::cout << "File encrypted successfully." << std::endl;
 
-    std::string decryptedFile = "decrypted.txt";	//@TODO: get file name from encrypted file name
+    std::string decryptedFile = encryptedFile.substr(0, encryptedFile.length() - 4) + ".txt";
     EncryptDecrypt(encryptedFile, decryptedFile, DECRYPT);
     std::cout << "File decrypted successfully." << std::endl;
 
