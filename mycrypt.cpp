@@ -3,6 +3,7 @@
 #include <string>
 #include <algorithm>
 #include "CLI11.hpp"
+#include <filesystem>
 
 #ifdef _WIN32
 #include <io.h>
@@ -79,8 +80,10 @@ std::string getFilename(const std::string_view inputFile) {
 }
 
 //find a new suitable filename if current name is occupied
-std::string findAvailableFileName(const std::string_view baseName) {
-    std::string fileName = static_cast<std::string>(baseName) + ".bin";
+std::string findAvailableFileName(const std::string_view baseName,
+								  const std::string_view postfix) {
+    std::string fileName = static_cast<std::string>(baseName)
+						 + static_cast<std::string>(postfix);
 
     int index = 1;
 #ifdef _WIN32
@@ -88,36 +91,41 @@ std::string findAvailableFileName(const std::string_view baseName) {
 #elif __linux__
 	while (access(fileName.c_str(), F_OK) == 0) {
 #endif
-        fileName = static_cast<std::string>(baseName) + std::to_string(index) + ".bin";
+        fileName = static_cast<std::string>(baseName)
+					+ std::to_string(index)
+					+ static_cast<std::string>(postfix);
         index++;
     } return fileName;
 }
 
 
 int main(int argc, char* argv[]) {
-	if(argc < 2) { return -1; }
-
 	std::string_view key = g_KEY;
 	std::string_view filetobeEncrypted, filetobeDecrypted;
 
 	CLI::App app{"parse input command line"};
 	app.add_option("-k,--key", key, "the key string use to encrypt");
-	app.add_option("-e,--encrypt", filetobeEncrypted, "the input file which will be encrypted");
-	app.add_option("-d,--decrypt", filetobeDecrypted, "the input file which will be decrypted");
+	app.add_option("-e,--encrypt", filetobeEncrypted, "the input file which will be encrypted")
+			// ->excludes("-e")	//we <dont need / can't do> this since `-d` option is not created yet
+			->check(CLI::ExistingFile);
+	app.add_option("-d,--decrypt", filetobeDecrypted, "the input file which will be decrypted")
+			->excludes("-e")	//we <dont need to/ can't> use the full `-e,--encrypt`, it'll include
+			->check(CLI::ExistingFile);
 
 	CLI11_PARSE(app, argc, argv);
 
 	if(app.count("--encrypt")) {
-		std::cout << "Encrypting file..." << std::endl;
-		std::string encryptedFile = findAvailableFileName(getFilename(filetobeEncrypted));
+		std::string encryptedFile = findAvailableFileName(getFilename(filetobeEncrypted), ".bin");
 		std::cout << "Encrypted output: " << encryptedFile << std::endl;
-		EncryptDecrypt(filetobeEncrypted, encryptedFile, ENCRYPT);
+		EncryptDecrypt(filetobeEncrypted, encryptedFile, ENCRYPT, key);
 		std::cout << "File encrypted successfully." << std::endl;
 	} else if (app.count("--decrypt")) {
-		std::cout << "Decrypting file..." << std::endl;
-		std::string decryptedFile = static_cast<std::string>(filetobeDecrypted.substr(0, filetobeDecrypted.length() - 4)) + ".txt";
+		std::string decryptedFile = findAvailableFileName(
+			getFilename(static_cast<std::string>(
+							filetobeDecrypted.substr(0, filetobeDecrypted.length() - 4))),
+			".txt");
 		std::cout << "Decrypted output: " << decryptedFile << std::endl;
-		EncryptDecrypt(filetobeDecrypted, decryptedFile, DECRYPT);
+		EncryptDecrypt(filetobeDecrypted, decryptedFile, DECRYPT, key);
 		std::cout << "File decrypted successfully." << std::endl;
 	} else {	//@TODO: should use CLI rule to avoid coming here
 		std::cerr << "no file input" << std::endl;
