@@ -153,6 +153,66 @@ void convert2ThreeChannelRGB_Bilinear(const std::vector<uint16_t>& bayerData, st
 	}
 }
 
+// pixelize rgb image
+void pixelizeRgbImage(const std::vector<uint16_t>& bayerData, std::vector<uint8_t>& rgbData) {
+	// 既然都要 pixelize 了，所以就用最近邻算法就够用了
+	convert2ThreeChannelRGB_NearestNeighbor(bayerData, rgbData);
+
+	// 将图像划分为若干个 10x10 的小块，求小块的平均颜色，并将其赋值给小块内所有像素点
+	for(int y = 0; y < height; y += 10) {
+		for(int x = 0; x < width; x += 10) {
+			int sumR = 0;
+			int sumG = 0;
+			int sumB = 0;
+			for(int i = 0; i < 100; i++) {
+				int targetIndex = (y + i / 10) * 1920 + (x + i % 10);
+				sumR += rgbData[targetIndex*3 + 0];
+				sumG += rgbData[targetIndex*3 + 1];
+				sumB += rgbData[targetIndex*3 + 2];
+			}
+
+			sumR /= 100;
+			sumG /= 100;
+			sumB /= 100;
+			//以上部分用于求像素块的颜色平均值
+
+			for(int i = 0; i < 10; i++) {
+				for(int j = 0; j < 10; j++) {
+					int targetIndex = (y+i) * 1920 + (x+j);
+					if(i == 0 || j == 0 || i == 9 || j == 9) { // 将像素块边缘描黑
+						//注释掉以下内容的话则边缘是底图的原图，即用最近邻算法得到的彩图
+						rgbData[targetIndex * 3 + 0] = 0;
+						rgbData[targetIndex * 3 + 1] = 0;
+						rgbData[targetIndex * 3 + 2] = 0;
+					} else {
+						rgbData[targetIndex * 3 + 0] = sumR;
+						rgbData[targetIndex * 3 + 1] = sumG;
+						rgbData[targetIndex * 3 + 2] = sumB;
+					}
+				}
+			}
+		}
+	}
+}
+
+// slice rgb image
+void sliceRgbImage(const std::vector<uint16_t>& bayerData, std::vector<uint8_t>& rgbData) {
+	convert2ThreeChannelRGB_NearestNeighbor(bayerData, rgbData);
+
+	for(int y = 0; y < height; ++y) {
+		for(int x = 0; x < width; ++x) {
+			int targetIndex = y * 1920 + x;
+			if(x % 10 < 2) {
+				rgbData[targetIndex * 3 + 0] = 0;
+				rgbData[targetIndex * 3 + 1] = 0;
+				rgbData[targetIndex * 3 + 2] = 0;
+			} else {
+				//
+			}
+		}
+	}
+}
+
 
 
 // 保存RGB图像数据到文件
@@ -198,6 +258,18 @@ int main() {
     convert2ThreeChannelRGB_Bilinear(bayerData, rgbData);
     // saveThreeChannelRGBRawData("outputRGB_Bilinear.rgb", rgbData);
 	saveRGBRawDataToPNG("outputRGB_Bilinear.png", rgbData, width, height);
+
+
+
+	// -------------------------------------------------------------------- //
+
+    pixelizeRgbImage(bayerData, rgbData);
+    // saveThreeChannelRGBRawData("outputRGB_pixelize.rgb", rgbData);
+	saveRGBRawDataToPNG("outputRGB_pixelize.png", rgbData, width, height);
+
+    sliceRgbImage(bayerData, rgbData);
+    // saveThreeChannelRGBRawData("outputRGB_slice.rgb", rgbData);
+	saveRGBRawDataToPNG("outputRGB_slice.png", rgbData, width, height);
 
     return 0;
 }
