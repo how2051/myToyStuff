@@ -38,7 +38,11 @@ public:
 	RingBuffer(int buffer_size) : _buffer_size(buffer_size) {
 		_ring_buffer.clear();
 
-		for(int i = 0; i < buffer_size; i++) {
+		if(_buffer_size <= 0) {
+			_buffer_size = 8;
+		}
+
+		for(int i = 0; i < _buffer_size; i++) {
 			DataPtr data = std::make_shared<Data>();
 			data->data.resize(640 * 480);
 			_ring_buffer.push_back(data);
@@ -74,12 +78,13 @@ public:
 		_data_available_condition.notify_all();
 	}
 
-	void fetchBuffer(long timeout, DataPtr& data) {
+	bool fetchBuffer(long timeout, DataPtr& data) {
 		std::unique_lock<std::mutex> _(_data_access_mutex);
 		if(!_data_available_condition.wait_for(_, std::chrono::milliseconds(timeout), [this](){
 			return _buff_used.load() > 0;
 		})) {
 			std::cout << "time out" << std::endl;
+			return false;
 		}
 
 		// read data
@@ -89,6 +94,7 @@ public:
 
 		moveIterator(_it_reader);
 		--_buff_used;
+		return true;
 	}
 
 	DataPtr getWriteableData() {
@@ -110,9 +116,10 @@ void producer(RingBuffer& buffer) {
 void consumer(RingBuffer& buffer) {
     while(true) {
         DataPtr read;
-		buffer.fetchBuffer(2000, read);
-        // simulate reading data
-		std::cout << "read out data 0 : " << (int)read->data[0] << std::endl;
+		if(buffer.fetchBuffer(500, read)) {
+			// simulate reading data
+			std::cout << "read out data 0 : " << (int)read->data[0] << std::endl;
+		}
     }
 }
 
