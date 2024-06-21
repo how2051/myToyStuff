@@ -28,6 +28,9 @@ industryNameSet = {
 '电源设备','包装材料','医药商业','酿酒行业','物流行业','多元金融'
 }
 
+today = datetime.datetime.today().date()
+today = today.strftime("%Y-%m-%d")
+
 
 
 
@@ -53,8 +56,8 @@ def getPdfLink(infoCode):
 
 
 
-
 def downloadPdf(url, filename):
+    print(url)
     if '/' in filename:
         print(f"skip {filename}")
         return
@@ -63,7 +66,7 @@ def downloadPdf(url, filename):
         os.makedirs(folder)
 
     filepath = os.path.join(folder, filename)
-    
+
     response = requests.get(url)
     if response.status_code == 200:
         with open(filepath, 'wb') as f:
@@ -74,19 +77,22 @@ def downloadPdf(url, filename):
 
 
 
-
-def fetchOnePageReport(pageIndex, industry=''):
-    if industry not in industryNameSet:
-        return
+def getReportInfo(pageIndex):
     report_url_postfix = f"industryCode=*&pageSize=50&industry=*&beginTime=*&endTime=*&pageNo={pageIndex}&qType=1"
     url = report_url_prefix + report_url_postfix
     response = requests.get(url=url, headers=headers)
     results = response.json()
     # print(results['data'])
+    return results
 
-    for item in results['data']:
+
+
+def fetchReportPdf(report_info, industry='', is_only_today=False):
+    for item in report_info['data']:
         if(industry != '' and industry != item['industryName']):
             continue
+        if(is_only_today and item['publishDate'].split()[0] != today):
+            break
         print(item['industryName'])
         print(f"《{item['title']}》by {item['orgSName']} : {item['researcher']}")
         # print(item['orgName'])
@@ -98,18 +104,30 @@ def fetchOnePageReport(pageIndex, industry=''):
         # print(item['attachSize'])
         # print(item['count'])
         pdfLink = getPdfLink(item['infoCode'])
-        print(pdfLink)
         downloadPdf(pdfLink, f"{item['title']}.pdf")
         print('\n')
 
 
 
-def fetchMultiPageReport(pageNumber, industry=''):
-    for page in range(1, pageNumber+1):
-        fetchOnePageReport(page, industry)
+def fetchOnePageReport(page_index, industry='', is_only_today=False):
+    if industry not in industryNameSet:
+        return
+    report_info = getReportInfo(page_index)
+    fetchReportPdf(report_info, industry, is_only_today)
 
 
 
-fetchMultiPageReport(3)
-# today = datetime.datetime.today().date()
-# print(today)
+def fetchMultiPageReport(page_number, industry='', is_only_today=False):
+    for page_index in range(1, page_number + 1):
+        fetchOnePageReport(page_index, industry, is_only_today)
+
+
+
+def fetchTodayReport(industry=''):
+    fetchMultiPageReport(3, industry, True)
+
+
+
+fetchTodayReport()
+
+
