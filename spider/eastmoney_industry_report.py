@@ -3,7 +3,7 @@ import requests
 import json
 from bs4 import BeautifulSoup
 import os
-
+import datetime
 
 
 
@@ -75,38 +75,41 @@ def downloadPdf(url, filename):
 
 
 
-def fetchNPageReport(pageNumber, industry=''):
+def fetchOnePageReport(pageIndex, industry=''):
     if industry not in industryNameSet:
         return
+    report_url_postfix = f"industryCode=*&pageSize=50&industry=*&beginTime=*&endTime=*&pageNo={pageIndex}&qType=1"
+    url = report_url_prefix + report_url_postfix
+    response = requests.get(url=url, headers=headers)
+    results = response.json()
+    # print(results['data'])
+
+    for item in results['data']:
+        if(industry != '' and industry != item['industryName']):
+            continue
+        print(item['industryName'])
+        print(f"《{item['title']}》by {item['orgSName']} : {item['researcher']}")
+        # print(item['orgName'])
+        # print(item['orgSName'])
+        # print(item['infoCode'])
+        # print(item['publishDate'])
+        # print(item['author'])
+        # print(item['researcher'])
+        # print(item['attachSize'])
+        # print(item['count'])
+        pdfLink = getPdfLink(item['infoCode'])
+        print(pdfLink)
+        downloadPdf(pdfLink, f"{item['title']}.pdf")
+        print('\n')
+
+
+
+def fetchMultiPageReport(pageNumber, industry=''):
     for page in range(1, pageNumber+1):
-        report_url_postfix = f"industryCode=*&pageSize=50&industry=*&beginTime=*&endTime=*&pageNo={page}&qType=1"
-        url = report_url_prefix + report_url_postfix
-        response = requests.get(url=url, headers=headers)
-        results = response.json()
-        # print(results['data'])
-    
-        for item in results['data']:
-            if(industry != '' and industry != item['industryName']):
-                continue
-            print(item['industryName'])
-            print(f"《{item['title']}》by {item['orgSName']} : {item['researcher']}")
-            # print(item['orgName'])
-            # print(item['orgSName'])
-            # print(item['infoCode'])
-            # print(item['publishDate'])
-            # print(item['author'])
-            # print(item['researcher'])
-            # print(item['attachSize'])
-            # print(item['count'])
-            pdfLink = getPdfLink(item['infoCode'])
-            print(pdfLink)
-            downloadPdf(pdfLink, f"{item['title']}.pdf")
-            print('\n')
+        fetchOnePageReport(page, industry)
 
 
 
-
-
-fetchNPageReport(3)
-
-
+fetchMultiPageReport(3)
+# today = datetime.datetime.today().date()
+# print(today)
