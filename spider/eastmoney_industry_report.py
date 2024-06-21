@@ -56,12 +56,17 @@ def getPdfLink(infoCode):
 
 
 
-def downloadPdf(url, filename):
+def downloadPdf(url, filename, is_only_today=False):
     print(url)
     if '/' in filename:
         print(f"skip {filename}")
         return
-    folder = "report"
+
+    if(is_only_today):
+        folder = today
+    else:
+        folder = "report"
+
     if not os.path.exists(folder):
         os.makedirs(folder)
 
@@ -104,7 +109,7 @@ def fetchReportPdf(report_info, industry='', is_only_today=False):
         # print(item['attachSize'])
         # print(item['count'])
         pdfLink = getPdfLink(item['infoCode'])
-        downloadPdf(pdfLink, f"{item['title']}.pdf")
+        downloadPdf(pdfLink, f"{item['title']}.pdf", is_only_today)
         print('\n')
 
 
