@@ -43,6 +43,11 @@ def getNDaysBeforeTimestamp(days=1):
 	return timestamp
 
 
+def getCurrentTimestamp():
+    now = datetime.datetime.now()
+    timestamp = int(time.mktime(now.timetuple()) * 1000 + now.microsecond / 1000)
+    return timestamp
+
 
 def parseTimestamp(timestamp):
 	timestamp_in_seconds = timestamp / 1000
@@ -100,7 +105,7 @@ def getChannelOnePageNews(channel_id, page_index):
 		"excludeContIds": [],
 		"listRecommendIds": None,
 		"pageSize": 20,
-		"startTime": getNDaysBeforeTimestamp(page_index+1),
+		"startTime": getCurrentTimestamp(),
 		"pageNum": page_index
 	}
 
@@ -114,11 +119,14 @@ def getChannelOnePageNews(channel_id, page_index):
 	for obj in response_json['data']['list']:
 		# print(obj)
 		news_url = "https://www.thepaper.cn/newsDetail_forward_" + obj['contId']
-		print(obj['name'] + " by @" + obj['nodeInfo']['name'])  # news title
+		news_title = obj['name'] + " by @" + obj['nodeInfo']['name']
+		if("习近平" in news_title):
+			continue
+		print(news_title)  # news title
 		print(news_url)  # news url
 		showPubTime(obj)
 		showTags(obj)
-		showNewsContent(news_url)  # news content
+		# showNewsContent(news_url)  # news content
 		print("======================================================")
 		print('\n')
 
@@ -137,8 +145,8 @@ def getMultiChannelNews():
 
 
 # getHotNews()
-getChannelMultiPageNews("25950", 3)
-# getMultiChannelNews()
+# getChannelMultiPageNews("25950", 3)  # "25950", "122908", "25951",	"119908",
+getMultiChannelNews()
 
 
 
