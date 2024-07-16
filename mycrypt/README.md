@@ -16,7 +16,8 @@ but it just a toy project, don't use it to encrypt some very important files
 
 2. for windows
 ```shell
+rm -rf build
 ./build_windows.sh
-./mycrypt.exe -k yourPassword -e yourFiletobeEncrypted
-./mycrypt.exe -k yourPassword -d yourFiletobeDecrypted
+./build/mycrypt.exe -k yourPassword -e yourFiletobeEncrypted
+./build/mycrypt.exe -k yourPassword -d yourFiletobeDecrypted
 ```
