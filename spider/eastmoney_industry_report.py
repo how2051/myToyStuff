@@ -4,7 +4,7 @@ import json
 from bs4 import BeautifulSoup
 import os
 import datetime
-
+import re
 
 
 report_url_prefix = "https://reportapi.eastmoney.com/report/list?"
@@ -58,9 +58,16 @@ def getPdfLink(infoCode):
 
 def downloadPdf(url, filename, is_only_today=False):
     print(url)
-    if '/' in filename:
-        print(f"skip {filename}")
-        return
+
+    # 定义非法字符的正则表达式模式
+    illegal_chars_pattern = r'[<>:"/\\|?*]'
+
+    if re.search(illegal_chars_pattern, filename):
+        # 替换非法字符为 '#'
+        cleaned_filename = re.sub(illegal_chars_pattern, '#', filename)
+        print(f"Original filename: {filename}")
+        print(f"Cleaned filename: {cleaned_filename}")
+        filename = cleaned_filename
 
     if(is_only_today):
         folder = today
