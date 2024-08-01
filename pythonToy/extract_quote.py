@@ -1,6 +1,7 @@
 import re
 import urllib.parse
 import os
+import argparse
 
 '''
 本脚本用于将 Obsidian 中的英文笔记进行预处理，提取被反引号括起来的词汇，写入文末
@@ -74,6 +75,8 @@ def parse_obsidian_uri(obsidian_uri):
 	return local_file_path
 
 
-
-local_file_path = parse_obsidian_uri('')
+parser = argparse.ArgumentParser()
+parser.add_argument('url', type=str)
+args = parser.parse_args()
+local_file_path = parse_obsidian_uri(args.url)
 extract_and_append_quotes(local_file_path)
