@@ -116,11 +116,12 @@ def getChannelOnePageNews(channel_id, page_index):
 	response = session.post(url=base_url+channel_url, headers=headers, json=data)
 	response_json = response.json()
 
+	keywords = ["习近平", "习言道"]
 	for obj in response_json['data']['list']:
 		# print(obj)
 		news_url = "https://www.thepaper.cn/newsDetail_forward_" + obj['contId']
 		news_title = obj['name'] + " by @" + obj['nodeInfo']['name']
-		if("习近平" in news_title):
+		if any(keyword in news_title for keyword in keywords):
 			continue
 		print(news_title)  # news title
 		print(news_url)  # news url
