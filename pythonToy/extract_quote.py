@@ -6,10 +6,14 @@ import argparse
 '''
 本脚本用于将 Obsidian 中的英文笔记进行预处理，提取被反引号括起来的词汇，写入文末
 
-复制英文笔记的 Obsidian URL，填入 `parse_obsidian_uri` 函数中
-其将解析该链接并返回该笔记的实际地址
+复制英文笔记的 Obsidian URL，并将其作为程序的传参传入，程序会解析该链接并返回该笔记的实际地址
 `extract_and_append_quotes` 函数读入实际地址后会提取相应的关键词
 并将关键词逐行写入到 `---` 后
+
+使用示例：
+$ python extract_quote.py "obsidian://open?vault=myObsidian&file=xxxxx"
+
+
 '''
 
 
