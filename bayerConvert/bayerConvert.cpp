@@ -23,7 +23,7 @@ void readBayerImage(const std::string& filename, std::vector<uint16_t>& bayerDat
 void convert2ThreeChannelBayer(const std::vector<uint16_t>& bayerData, std::vector<uint8_t>& rgbData) {
 	for(int y = 0; y < height; ++y) {
 		for(int x = 0; x < width; ++x) {
-			int targetIndex = y * 1920 + x;
+			int targetIndex = y * width + x;
 			uint8_t rgbValue = static_cast<uint8_t>(bayerData[targetIndex] >> 8);
 
 			rgbData[targetIndex * 3 + 0] = (x % 2 == 1 && y % 2 == 1) ? rgbValue : 0; // R通道
@@ -51,8 +51,6 @@ void convert2ThreeChannelGray(const std::vector<uint16_t>& bayerData, std::vecto
 
 // 将单通道的Bayer图像转换为三通道的RGB图像（正儿八经 demosaicing，最近邻插值算法，每个像素点有 r、g、b 分量，是彩图）
 void convert2ThreeChannelRGB_NearestNeighbor(const std::vector<uint16_t>& bayerData, std::vector<uint8_t>& rgbData) {
-	int height = 1080;
-	int width  = 1920;
 	for (int y = 0; y < height - 1; y += 2) {
 		for (int x = 0; x < width - 1; x += 2) {
 			// fetch BGGR data
@@ -87,8 +85,6 @@ void convert2ThreeChannelRGB_NearestNeighbor(const std::vector<uint16_t>& bayerD
 
 // 将单通道的Bayer图像转换为三通道的RGB图像（正儿八经 demosaicing，双线性插值算法，每个像素点有 r、g、b 分量，是彩图）
 void convert2ThreeChannelRGB_Bilinear(const std::vector<uint16_t>& bayerData, std::vector<uint8_t>& rgbData) {
-	int height = 1080;
-	int width  = 1920;
 	for(int y = 0; y < height; ++y) {
 		for(int x = 0; x < width; ++x) {
 			uint8_t r, g, b;
@@ -165,7 +161,7 @@ void pixelizeRgbImage(const std::vector<uint16_t>& bayerData, std::vector<uint8_
 			int sumG = 0;
 			int sumB = 0;
 			for(int i = 0; i < 100; i++) {
-				int targetIndex = (y + i / 10) * 1920 + (x + i % 10);
+				int targetIndex = (y + i / 10) * width + (x + i % 10);
 				sumR += rgbData[targetIndex*3 + 0];
 				sumG += rgbData[targetIndex*3 + 1];
 				sumB += rgbData[targetIndex*3 + 2];
@@ -178,7 +174,7 @@ void pixelizeRgbImage(const std::vector<uint16_t>& bayerData, std::vector<uint8_
 
 			for(int i = 0; i < 10; i++) {
 				for(int j = 0; j < 10; j++) {
-					int targetIndex = (y+i) * 1920 + (x+j);
+					int targetIndex = (y+i) * width + (x+j);
 					if(i == 0 || j == 0 || i == 9 || j == 9) { // 将像素块边缘描黑
 						//注释掉以下内容的话则边缘是底图的原图，即用最近邻算法得到的彩图
 						rgbData[targetIndex * 3 + 0] = 0;
@@ -201,7 +197,7 @@ void sliceRgbImage(const std::vector<uint16_t>& bayerData, std::vector<uint8_t>&
 
 	for(int y = 0; y < height; ++y) {
 		for(int x = 0; x < width; ++x) {
-			int targetIndex = y * 1920 + x;
+			int targetIndex = y * width + x;
 			if(x % 10 < 2) {
 				rgbData[targetIndex * 3 + 0] = 0;
 				rgbData[targetIndex * 3 + 1] = 0;
