@@ -7,6 +7,7 @@ struct _listNode {
 	void* m_prev;
 	void* m_next;
 	T m_data;
+	// _listNode(T x) : m_data(x), m_next(nullptr), m_prev(nullptr) {}
 };
 
 template <class T>
