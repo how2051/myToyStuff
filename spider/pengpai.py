@@ -34,7 +34,7 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:127.0) Gecko/20100101 Firefox/127.0"
 }
 
-
+news_set = set()
 
 def getNDaysBeforeTimestamp(days=1):
 	pre_day = today - datetime.timedelta(days=days)
@@ -84,19 +84,26 @@ def showNewsContent(news_url):
 
 
 
-def showTags(obj):
+def getTags(obj):
     tag_list = obj.get('tagList', [])
     tags = [tag_obj['tag'] for tag_obj in tag_list]
     tag_string = ", ".join(tags)
-    if(tag_string):
-    	print("关键词：" + tag_string)
+    return ("关键词：" + (tag_string if tag_string else "无"))
 
 
 
-def showPubTime(obj):
+def getPubTime(obj):
 	pub_time = parseTimestamp(obj['pubTimeLong'])
-	print("发布时间：" + pub_time.strftime("%Y-%m-%d %H:%M:%S"))
+	return ("发布时间：" + pub_time.strftime("%Y-%m-%d %H:%M:%S"))
 
+
+
+def saveNews(news_title, news_url, pub_time, tags):
+	with open("news_output.txt", "a", encoding="utf-8") as file:
+		file.write(f"{news_title}\n{news_url}\n{pub_time}\n{tags}\n")
+		file.write("==========" * 10)
+		file.write("\n\n")
+	return
 
 
 def getChannelOnePageNews(channel_id, page_index):
@@ -116,20 +123,28 @@ def getChannelOnePageNews(channel_id, page_index):
 	response = session.post(url=base_url+channel_url, headers=headers, json=data)
 	response_json = response.json()
 
-	keywords = ["习近平", "习言道", "习语", "总书记"]
+	keywords = ["习近平", "习言道", "习语", "习主席", "总书记"]
 	for obj in response_json['data']['list']:
 		# print(obj)
 		news_url = "https://www.thepaper.cn/newsDetail_forward_" + obj['contId']
 		news_title = obj['name'] + " by @" + obj['nodeInfo']['name']
 		if any(keyword in news_title for keyword in keywords):
 			continue
-		print(news_title)  # news title
-		print(news_url)  # news url
-		showPubTime(obj)
-		showTags(obj)
-		# showNewsContent(news_url)  # news content
-		print("======================================================")
-		print('\n')
+
+		pub_time = getPubTime(obj)
+		tags = getTags(obj)
+		if (news_title, news_url, pub_time, tags) in news_set:
+			pass
+		else:
+			news_set.add((news_title, news_url, pub_time, tags))
+			saveNews(news_title, news_url, pub_time, tags)
+			print(news_title)  # news title
+			print(news_url)  # news url
+			print(pub_time)
+			print(tags)
+			# # showNewsContent(news_url)  # news content
+			print("==========" * 10)
+			print("\n")
 
 
 
@@ -147,10 +162,9 @@ def getMultiChannelNews():
 
 # getHotNews()
 # getChannelMultiPageNews("25950", 3)  # "25950", "122908", "25951",	"119908",
-getMultiChannelNews()
-
-
-
+while(1):
+	getMultiChannelNews()
+	time.sleep(30 * 60)
 
 
 
