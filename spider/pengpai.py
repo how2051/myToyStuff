@@ -123,7 +123,7 @@ def getChannelOnePageNews(channel_id, page_index):
 	response = session.post(url=base_url+channel_url, headers=headers, json=data)
 	response_json = response.json()
 
-	keywords = ["习近平", "习言道", "习语", "习主席", "总书记"]
+	keywords = ["习近平", "习言道", "习语", "习主席", "总书记", "一习话"]
 	for obj in response_json['data']['list']:
 		# print(obj)
 		news_url = "https://www.thepaper.cn/newsDetail_forward_" + obj['contId']
@@ -164,6 +164,8 @@ def getMultiChannelNews():
 # getChannelMultiPageNews("25950", 3)  # "25950", "122908", "25951",	"119908",
 while(1):
 	getMultiChannelNews()
+	with open("news_output.txt", "a", encoding="utf-8") as file:
+		file.write("@@@@@@@@@@@@@@@@@@@@@@@@@@@\n\n\n")
 	time.sleep(30 * 60)
 
 
