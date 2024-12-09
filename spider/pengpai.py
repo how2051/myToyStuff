@@ -1,8 +1,6 @@
 
 import requests
-import json
 from bs4 import BeautifulSoup
-import os
 import time
 import datetime
 
@@ -116,6 +114,8 @@ def getChannelOnePageNews(channel_id, page_index):
 		"pageNum": page_index
 	}
 
+	two_days_ago = datetime.datetime.now() - datetime.timedelta(days=2)
+
 	# 创建 Session 对象
 	session = requests.Session()
 
@@ -128,7 +128,10 @@ def getChannelOnePageNews(channel_id, page_index):
 		# print(obj)
 		news_url = "https://www.thepaper.cn/newsDetail_forward_" + obj['contId']
 		news_title = obj['name'] + " by @" + obj['nodeInfo']['name']
+
 		if any(keyword in news_title for keyword in keywords):
+			continue
+		if parseTimestamp(obj['pubTimeLong']) < two_days_ago:
 			continue
 
 		pub_time = getPubTime(obj)
@@ -165,7 +168,8 @@ def getMultiChannelNews():
 while(1):
 	getMultiChannelNews()
 	with open("news_output.txt", "a", encoding="utf-8") as file:
-		file.write("@@@@@@@@@@@@@@@@@@@@@@@@@@@\n\n\n")
+		file.write("@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+		file.write("\n\n\n" * 2)
 	time.sleep(30 * 60)
 
 
