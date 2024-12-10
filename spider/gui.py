@@ -20,10 +20,9 @@ def clear_data():
         text_widget.insert(tk.END, f"\nclear failed! : {e}")
 
 
+
 root = tk.Tk()
 root.title("Newspaper")
-
-
 root.configure(bg="#2E3440")
 
 text_widget = ScrolledText(
@@ -34,10 +33,12 @@ text_widget = ScrolledText(
 )
 text_widget.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
+
 root.update_idletasks()
 min_width = text_widget.winfo_reqwidth() + 40
 min_height = text_widget.winfo_reqheight() + 65
 root.minsize(min_width, min_height)
+
 
 button_frame = tk.Frame(root, bg="#2E3440")
 button_frame.pack(pady=10)
