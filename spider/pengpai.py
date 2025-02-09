@@ -137,8 +137,12 @@ def getChannelOnePageNews(channel_id, page_index):
 	keywords = ["习近平", "习言道", "习语", "习主席", "总书记", "一习话"]
 	for obj in response_json['data']['list']:
 		# print(obj)
+		if 'nodeInfo' in obj:   # a new "bug" of pengpai, nodeInfo may be missing
+			news_title = obj['name'] + " by @" + obj['nodeInfo']['name']
+		else:
+			news_title = obj['name'] + " by @Unknown"
+
 		news_url = "https://www.thepaper.cn/newsDetail_forward_" + obj['contId']
-		news_title = obj['name'] + " by @" + obj['nodeInfo']['name']
 
 		if any(keyword in news_title for keyword in keywords):
 			continue
