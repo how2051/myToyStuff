@@ -134,7 +134,7 @@ def getChannelOnePageNews(channel_id, page_index):
 	response = session.post(url=base_url+channel_url, headers=headers, json=data)
 	response_json = response.json()
 
-	keywords = ["习近平", "习言道", "习语", "习主席", "总书记", "一习话"]
+	keywords = ["习近平", "习言道", "习语", "习主席", "总书记", "一习话", "讲习所"]
 	for obj in response_json['data']['list']:
 		# print(obj)
 		if 'nodeInfo' in obj:   # a new "bug" of pengpai, nodeInfo may be missing
