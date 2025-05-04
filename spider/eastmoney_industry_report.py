@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import os
 import datetime
 import re
+import subprocess
 
 
 report_url_prefix = "https://reportapi.eastmoney.com/report/list?"
@@ -88,6 +89,46 @@ def downloadPdf(url, filename, is_only_today=False):
         print("Download failed")
 
 
+def download_pdf_with_curl(url, filename, is_only_today=False):
+    print(url)
+
+    # 定义非法字符的正则表达式模式
+    illegal_chars_pattern = r'[<>:"/\\|?*]'
+
+    if re.search(illegal_chars_pattern, filename):
+        # 替换非法字符为 '#'
+        cleaned_filename = re.sub(illegal_chars_pattern, '#', filename)
+        print(f"Original filename: {filename}")
+        print(f"Cleaned filename: {cleaned_filename}")
+        filename = cleaned_filename
+
+    if(is_only_today):
+        folder = today
+    else:
+        folder = "report"
+
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    filepath = os.path.join(folder, filename)
+
+
+    user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:138.0) Gecko/20100101 Firefox/138.0"
+    cmd = [
+        "curl",
+        "-L",  # 跟踪跳转
+        "-H", f"User-Agent: {user_agent}",
+        "-o", filepath,
+        url
+    ]
+    try:
+        subprocess.run(cmd, check=True)
+        # print(f"✅ 下载成功：{filename}")
+    except subprocess.CalledProcessError as e:
+        print(f"❌ 下载失败：{e}")
+
+
+
 
 def getReportInfo(pageIndex):
     report_url_postfix = f"industryCode=*&pageSize=50&industry=*&beginTime=*&endTime=*&pageNo={pageIndex}&qType=1"
@@ -116,7 +157,7 @@ def fetchReportPdf(report_info, industry='', is_only_today=False):
         # print(item['attachSize'])
         # print(item['count'])
         pdfLink = getPdfLink(item['infoCode'])
-        downloadPdf(pdfLink, f"{item['title']}.pdf", is_only_today)
+        download_pdf_with_curl(pdfLink, f"{item['title']}.pdf", is_only_today)
         print('\n')
 
 
@@ -138,8 +179,11 @@ def fetchMultiPageReport(page_number, industry='', is_only_today=False):
 def fetchTodayReport(industry=''):
     fetchMultiPageReport(3, industry, True)
 
+def fetchRecentReport(page_number=3):
+     fetchMultiPageReport(page_number, '', False)
 
 
 fetchTodayReport()
+# fetchRecentReport()
 
 
