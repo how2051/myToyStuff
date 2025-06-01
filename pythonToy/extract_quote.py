@@ -72,7 +72,7 @@ def parse_obsidian_uri(obsidian_uri):
 	decoded_file_path = urllib.parse.unquote(file_path).replace('/', '\\')
 
 	# 构建本地文件路径
-	local_base_path = r'D:\HowPersonal'
+	local_base_path = r'D:\R1ckPersonal'
 	local_file_path = os.path.join(local_base_path, vault_name, decoded_file_path) + '.md'
 
 	print(local_file_path)
